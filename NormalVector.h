@@ -12,6 +12,7 @@ class NormalVector {
 	float x,y,z;
 public:
 	NormalVector(float x, float y, float z);
+	NormalVector();
 	float xComponent();
 	float yComponent();
 	float zComponent();

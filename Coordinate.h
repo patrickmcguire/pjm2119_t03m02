@@ -12,6 +12,7 @@ class Coordinate {
 	float x,y,z;
 public:
 	Coordinate(float x, float y, float z);
+	Coordinate();
 	float xCoord();
 	float yCoord();
 	float zCoord();

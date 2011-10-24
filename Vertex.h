@@ -8,13 +8,16 @@
 #ifndef VERTEX_H_
 #define VERTEX_H_
 
+#include "NormalVector.h"
 #include "Coordinate.h"
 
 class Vertex {
+
+public:
 	Coordinate p;
 	NormalVector n;
-public:
 	Vertex(Coordinate p, NormalVector n);
+	Vertex();
 	virtual ~Vertex();
 };
 

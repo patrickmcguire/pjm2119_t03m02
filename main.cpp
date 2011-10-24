@@ -12,9 +12,6 @@ using namespace boost;
 
 int main(int argc, char * argv[])
 {
-
-
-
 	if(argc == 1)
 	{
 		cerr << "Please include a filename";
@@ -55,10 +52,12 @@ int main(int argc, char * argv[])
 			NormalVector n(x,y,z);
 			normals.push_back(n);
 		} else {
-			vector<int> face();
+			vector<int> face;
+
 			for (int i = 1; i < tokens.size(); i++) {
-				faces.push_back(face);
+
 			}
+			faces.push_back(face);
 		}
 	}
 	return 0;

@@ -8,28 +8,38 @@
 #ifndef HALFEDGE_H_
 #define HALFEDGE_H_
 
-typedef struct _NormalVector {
+typedef struct NormalVector {
 	float x;
 	float y;
 	float z;
 } NormalVector ;
 
-typedef struct _Coordinate {
+typedef struct Coordinate {
 	float x;
 	float y;
 	float z;
 } Coordinate;
 
-typedef struct _Vertex {
+typedef struct Vertex {
 	Coordinate * point;
 	NormalVector * normal;
 } Vertex;
 
-typedef struct _Face {
+typedef struct Face {
 	Vertex ** vertices;
 	int numVertices;
 } Face;
 
+typedef struct IndexFace {
+	int * vertices;
+	int numVertices;
+} IndexFace;
 
+typedef struct HalfEdge {
+	HalfEdge * pair;
+	HalfEdge * next;
+	Vertex * v;
+	Face * f;
+} HalfEdge;
 
 #endif /* HALFEDGE_H_ */

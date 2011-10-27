@@ -1,30 +1,23 @@
-#include <vector>
-#include <iostream>
+/*
+ * TriangleMesh.cpp
+ *
+ *  Created on: Oct 27, 2011
+ *      Author: pjm2119
+ */
+
+#include "TriangleMesh.h"
 #include <fstream>
-#include <string>
+#include <iostream>
+#include <vector>
+#include <sstream>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include <exception>
-#include "halfedge.h"
 
 using namespace std;
-using namespace boost;
 
-int main(int argc, char * argv[])
-{
-	string line;
-	vector<Coordinate *> coords;
-	vector<NormalVector *> normals;
-	vector<IndexFace *> faceIndexes;
+TriangleMesh::TriangleMesh(char * filename) {
 
-	if(argc == 1)
-	{
-		cerr << "Please include a filename";
-		exit(-1);
-	}
-
-	string filename = argv[1];
-	ifstream myfile (filename.c_str(), ios::in);
+	ifstream myfile (filename, ios::in);
 	if(!myfile.is_open())
 	{
 		cerr << "Error opening the file";
@@ -33,7 +26,8 @@ int main(int argc, char * argv[])
 
 	while(!myfile.eof())
 	{
-		getline(myfile,line);
+		char line[256];
+		myfile.getline(line,256);
 		vector<string> tokens;
 		boost::algorithm::split(tokens,line,boost::algorithm::is_space());
 		cout << tokens.size() << " " << tokens.at(0) << "\n";
@@ -114,5 +108,11 @@ int main(int argc, char * argv[])
 
 
 
-	return 0;
+	// TODO Auto-generated constructor stub
+
 }
+
+TriangleMesh::~TriangleMesh() {
+	// TODO Auto-generated destructor stub
+}
+

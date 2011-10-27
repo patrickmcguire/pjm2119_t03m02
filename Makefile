@@ -7,8 +7,8 @@ Milestone = 02
 SRC = main.cpp
 TARGET = main_t$(Theme)m$(Milestone)
 
-OBJS = main.o NormalVector.o Coordinate.o
-HEADERS = NormalVector.h Coordinate.h
+OBJS = main.o
+HEADERS = halfedge.h
 
 INCDIRS = -I/usr/include -I/usr/local/include
 LIBDIRS = -L/usr/lib -L/usr/local/lib -L/opt/local/lib

@@ -23,15 +23,30 @@ TriangleMesh::TriangleMesh(char * filename) {
 		cerr << "Error opening the file";
 		exit(-1);
 	}
+	std::vector<Coordinate *> * coords = new std::vector<Coordinate *>;
+	std::vector<NormalVector *> * normals = new std::vector<NormalVector *>;
+	std::vector<IndexFace *> * indexFaces = new std::vector<IndexFace *>;
+	readFromFile(myfile, coords, normals, indexFaces);
 
-	while(!myfile.eof())
+	std::vector<Vertex *> * vertices = makeVertices(coords, normals, vertices);
+	std::vector<Face *> * triangles = makeTriangles(indexFaces, vertices);
+
+
+}
+
+void readFromFile(std::ifstream & input,
+					std::vector<Coordinate *> * coords,
+					std::vector<NormalVector *> * normals,
+					std::vector<IndexFace *> * indexFaces) {
+	while(!input.eof())
 	{
 		char line[256];
-		myfile.getline(line,256);
+		input.getline(line,256);
 		vector<string> tokens;
+		vector<IndexFace *> faceIndices;
 		boost::algorithm::split(tokens,line,boost::algorithm::is_space());
 		cout << tokens.size() << " " << tokens.at(0) << "\n";
-		if(tokens.size() >= 3) {		{
+		if(tokens.size() >= 3) {
 			string first = tokens.at(0);
 			if(first.compare("s")) {
 				//do nothing
@@ -40,71 +55,50 @@ TriangleMesh::TriangleMesh(char * filename) {
 				sscanf(tokens.at(1).c_str(),"%f",&(c->x));
 				sscanf(tokens.at(2).c_str(),"%f",&(c->y));
 				sscanf(tokens.at(3).c_str(),"%f",&(c->z));
-				coords.push_back(c);
+				coords->push_back(c);
 			} else if(first.compare("vn")) {
 				NormalVector * n = (NormalVector *) malloc(sizeof(NormalVector));
 				sscanf(tokens.at(1).c_str(),"%f",&(n->x));
 				sscanf(tokens.at(2).c_str(),"%f",&(n->y));
 				sscanf(tokens.at(3).c_str(),"%f",&(n->z));
-				normals.push_back(n);
+				normals->push_back(n);
 			} else if(first.compare("f")) {
-				vector<int> buffer;
+				vector<int> * buffer = new vector<int>(0);
 				IndexFace * f = (IndexFace *) malloc(sizeof(IndexFace));
 				for (unsigned int i = 1; i < tokens.size(); i++){
 					int temp;
 					sscanf(tokens.at(i).c_str(),"%d",&temp);
-					buffer.push_back(temp);
+					buffer->push_back(temp);
 				}
-				f->numVertices = buffer.size();
-				int * vertices = (int *) malloc(f->numVertices * sizeof(int));
-				for (int i = 0; i < buffer.size(); i++) {
-					vertices[i] = buffer.at(0);
-				}
-				f->vertices = vertices;
-				faceIndexes.push_back(f);
+				f->vertices = buffer;
+				faceIndices.push_back(f);
 			}
 		}
-
 	}
-	vector<Vertex *> vertices;
-	for(unsigned int i = 0; i < normals.size(); i++) {
+}
+
+std::vector<Vertex *> * makeVertices (std::vector<Coordinate *> * coords,
+									std::vector<NormalVector *> * norms) {
+	std::vector<Vertex *> * vertices = new vector<Vertex>;
+	for(unsigned int i = 0; i < norms->size(); i++) {
 		Vertex * v = (Vertex *) malloc(sizeof(Vertex));
-		v->normal = normals.at(i);
-		v->point = coords.at(i);
-		vertices.push_back(v);
+		v->normal = norms->at(i);
+		v->point = coords->at(i);
+		vertices->push_back(v);
 	}
+	return vertices;
+}
 
-	for(unsigned int i = 0; i < faces.size()){
-	}
-
-
-	vector< Face > triangles;
-	for(vector< vector<int> >::iterator it = faces.begin(); it != faces.end(); it++)
-	{
+void triangularize(std::vector<Face *> & polygons,
+					std::vector<Face *> & triangles) {
+	for(vector< vector<int> >::iterator it = polygons.begin(); it != polygons.end(); it++) {
 		int origin = it->at(0);
 		int a,b;
-		for(int i = 2; i < it->size(); i++)
-		{
-			int triangle[] = new int[3];
-			triangle[0] = vertices.at(origin);
-			triangle[1] = vertices.at(it->at(i-1));
-			triangle[2] = vertices.at(it->at(i));
-			triangles.push_back(triangle);
+		for(int i = 2; i < it->size(); i++) {
 		}
 	}
 
 	HalfEdge edges[] = new HalfEdge[triangles.size() * 2];
-
-
-
-
-
-	if(normals.size() != coords.size())
-	{
-		cout << "normals: " << normals.size << "\n";
-		cout << "coords: " << coords.size << "\n";
-		exit(-1);
-	}
 
 
 

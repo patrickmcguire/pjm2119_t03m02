@@ -12,6 +12,7 @@
 #include <string>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/unordered_map.hpp>
 
 using namespace std;
 
@@ -28,7 +29,9 @@ TriangleMesh::TriangleMesh(char * filename) {
 
 	std::vector<Vertex *> * vertices = makeVertices(coords, normals);
 	std::vector<Face *> * triangles = makeTriangles(faces, vertices);
-
+	std::vector<HalfEdge *> * mesh = makeMesh(triangles,vertices);
+	this.vertices = vertices;
+	this.mesh = mesh;
 
 }
 
@@ -129,26 +132,82 @@ std::vector<Face *> * TriangleMesh::makeTriangles(std::vector<Face *> * indexFac
 
 std::vector<HalfEdge *> * TriangleMesh::makeMesh(std::vector<Face *> triangles,
 												std::vector<Vertex *> vertices) {
-	std::vector<HalfEdge *> * mesh = new std::vector<HalfEdge *>;
-
+	boost::unordered_map<string, HalfEdge *> map;
+	std::vector<HalfEdge *> * edges = new std::vector<HalfEdge *>;
 	/*Everything but the pair is easy*/
 	for(std::vector<Face *>::iterator it = triangles.begin(); it != triangles.end(); it++) {
 		HalfEdge * h1 = (HalfEdge *) malloc(sizeof(HalfEdge));
 		HalfEdge * h2 = (HalfEdge *) malloc(sizeof(HalfEdge));
 		HalfEdge * h3 = (HalfEdge *) malloc(sizeof(HalfEdge));
 
+		Face * triangle = *it;
+		int v1 = triangle->vertices->at(0);
+		int v2 = triangle->vertices->at(1);
+		int v3 = triangle->vertices->at(2);
+
+		/* Corresponding with edges pointing to the three vertices */
+		h1->v = v1;
+		h2->v = v2;
+		h3->v = v3;
+
+		/* Set up the sequences */
 		h1->next=h2;
 		h2->next=h3;
 		h3->next=h1;
-		if(NULL == it->h) {
-			it-> h= h1;
-		}
-		h1->f = it;
-		h2->f = it;
-		h3->f = it;
-	}
 
-	return NULL;
+		/* Put them in the map. Keys are weird, I know, but it's better than setting
+		 * up a custom comparison function and overloading and ahhhh */
+		string h1Vertices = v3 + "x" + v1;
+		string h2Vertices = v1 + "x" + v2;
+		string h3Vertices = v2 + "x" + v3;
+		map[h1Vertices] = h1;
+		map[h2Vertices] = h2;
+		map[h3Vertices] = h3;
+
+		/* Set pairs */
+		string h1Rev = v1 + "x" + v3;
+		string h2Rev = v2 + "x" + v1;
+		string h3Rev = v3 + "x" + v2;
+		if(map.count(h1Rev)) {
+			HalfEdge * pair = map[h1Rev];
+			pair->pair = h1;
+			h1->pair = pair;
+		}
+		if(map.count(h2Rev)) {
+			HalfEdge * pair = map[h2Rev];
+			pair->pair = h2;
+			h2->pair = pair;
+		}
+		if(map.count(h3Rev)) {
+			HalfEdge * pair = map[h3Rev];
+			pair->pair = h3;
+			h3->pair = pair;
+		}
+
+		/* Set faces */
+		h1->f = triangle;
+		h2->f = triangle;
+		h3->f = triangle;
+
+
+		if(NULL == triangle->h) {
+			triangle->h= h1;
+		}
+		if(NULL == vertices.at(v1)) {
+			vertices.at(v1)->h = h1;
+		}
+		if(NULL == vertices.at(v2)) {
+			vertices.at(v2)->h = h2;
+		}
+		if(NULL == vertices.at(v3)) {
+			vertices.at(v3)->h = h3;
+		}
+
+		edges->push_back(h1);
+		edges->push_back(h2);
+		edges->push_back(h3);
+	}
+	return edges;
 }
 
 

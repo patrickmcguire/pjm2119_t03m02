@@ -16,13 +16,15 @@
 
 class TriangleMesh {
 private:
+	std::vector<Vertex *> vertices;
+	std::vector<HalfEdge *> mesh;
 	void readFromFile(std::ifstream & input,
 					std::vector<Coordinate *> * coords,
 					std::vector<NormalVector *> * normals,
-					std::vector<IndexFace *> * indexFaces);
+					std::vector<Face *> * indexFaces);
 	std::vector<Vertex *> * makeVertices (std::vector<Coordinate *> * coords,
 										std::vector<NormalVector *> * norms);
-	std::vector<Face *> *  makeTriangles(std::vector<IndexFace *> * indexFaces,
+	std::vector<Face *> *  makeTriangles(std::vector<Face *> * indexFaces,
 										std::vector<Vertex *> * vertices);
 	std::vector<HalfEdge *> * makeMesh(std::vector<Face *> triangles,
 										std::vector<Vertex *> vertices);

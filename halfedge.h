@@ -25,12 +25,12 @@ typedef struct Coordinate {
 typedef struct Vertex {
 	Coordinate * point;
 	NormalVector * normal;
-	std::vector<HalfEdge *> * halfEdges;
+	std::vector<struct HalfEdge *> * halfEdges;
 } Vertex;
 
 typedef struct Face {
 	std::vector<Vertex *> * vertices;
-	std::vector<HalfEdge *> * halfEdges;
+	std::vector<struct HalfEdge *> * halfEdges;
 } Face;
 
 typedef struct IndexFace {

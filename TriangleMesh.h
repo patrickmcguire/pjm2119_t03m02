@@ -22,7 +22,7 @@ private:
 					std::vector<IndexFace *> * indexFaces);
 	std::vector<Vertex *> * makeVertices (std::vector<Coordinate *> * coords,
 										std::vector<NormalVector *> * norms);
-	std::vector<Face *> *  makeTriangles(std::vector<IndexFace *> * indexFaces,
+	std::vector<IndexFace *> *  makeTriangles(std::vector<IndexFace *> * indexFaces,
 										std::vector<Vertex *> * vertices);
 public:
 	TriangleMesh(char * filename);

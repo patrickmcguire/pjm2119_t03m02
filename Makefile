@@ -7,8 +7,8 @@ Milestone = 02
 SRC = main.cpp
 TARGET = main_t$(Theme)m$(Milestone)
 
-OBJS = main.o
-HEADERS = halfedge.h
+OBJS = main.o TriangleMesh.o
+HEADERS = halfedge.h TriangleMesh.h
 
 INCDIRS = -I/usr/include -I/usr/local/include
 LIBDIRS = -L/usr/lib -L/usr/local/lib -L/opt/local/lib
@@ -28,6 +28,8 @@ all: $(OBJS)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) $(LFLAGS)
 main.o: $(SRC) $(HEADERS)
 	$(CC) $(CFLAGS) -c $(SRC) $(HEADERS)
+trianglemesh.o: $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) -c TriangleMesh.cpp $(HEADERS)
 
 clean:
 	rm -f $(TARGET) $(TARGET_CREATIVE) $(OBJS) *.gch

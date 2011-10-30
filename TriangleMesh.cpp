@@ -4,48 +4,49 @@
  *  Created on: Oct 27, 2011
  *      Author: pjm2119
  */
-
 #include "TriangleMesh.h"
 #include <fstream>
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <string>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
 
 using namespace std;
 
 TriangleMesh::TriangleMesh(char * filename) {
-
-	ifstream myfile (filename, ios::in);
-	if(!myfile.is_open())
-	{
-		cerr << "Error opening the file";
-		exit(-1);
-	}
 	std::vector<Coordinate *> * coords = new std::vector<Coordinate *>;
 	std::vector<NormalVector *> * normals = new std::vector<NormalVector *>;
 	std::vector<IndexFace *> * indexFaces = new std::vector<IndexFace *>;
+	ifstream myfile;
+	myfile.open(filename, ios::in);
+	if(!myfile.is_open()) {
+		throw 1;
+	}
 	readFromFile(myfile, coords, normals, indexFaces);
 
-	std::vector<Vertex *> * vertices = makeVertices(coords, normals, vertices);
-	std::vector<Face *> * triangles = makeTriangles(indexFaces, vertices);
-
-
+	std::vector<Vertex *> * vertices = makeVertices(coords, normals);
+	std::vector<IndexFace *> * triangles = makeTriangles(indexFaces, vertices);
 }
 
-void readFromFile(std::ifstream & input,
+void TriangleMesh::readFromFile(std::ifstream & input,
 					std::vector<Coordinate *> * coords,
 					std::vector<NormalVector *> * normals,
 					std::vector<IndexFace *> * indexFaces) {
-	while(!input.eof())
-	{
-		char line[256];
-		input.getline(line,256);
+	vector<string> lines;
+	int i = 0;
+
+	while(!input.eof()) {
+		string * s = new string;
+		std::getline(input,*s);
+		lines.push_back(*s);
+	}
+	for(vector<string>::iterator it = lines.begin(); it != lines.end(); it++) {
+		string line = *it;
 		vector<string> tokens;
 		vector<IndexFace *> faceIndices;
 		boost::algorithm::split(tokens,line,boost::algorithm::is_space());
-		cout << tokens.size() << " " << tokens.at(0) << "\n";
 		if(tokens.size() >= 3) {
 			string first = tokens.at(0);
 			if(first.compare("s")) {
@@ -77,9 +78,9 @@ void readFromFile(std::ifstream & input,
 	}
 }
 
-std::vector<Vertex *> * makeVertices (std::vector<Coordinate *> * coords,
+std::vector<Vertex *> * TriangleMesh::makeVertices (std::vector<Coordinate *> * coords,
 									std::vector<NormalVector *> * norms) {
-	std::vector<Vertex *> * vertices = new vector<Vertex>;
+	std::vector<Vertex *> * vertices = new vector<Vertex *>;
 	for(unsigned int i = 0; i < norms->size(); i++) {
 		Vertex * v = (Vertex *) malloc(sizeof(Vertex));
 		v->normal = norms->at(i);
@@ -89,22 +90,40 @@ std::vector<Vertex *> * makeVertices (std::vector<Coordinate *> * coords,
 	return vertices;
 }
 
-void triangularize(std::vector<Face *> & polygons,
-					std::vector<Face *> & triangles) {
-	for(vector< vector<int> >::iterator it = polygons.begin(); it != polygons.end(); it++) {
-		int origin = it->at(0);
-		int a,b;
-		for(int i = 2; i < it->size(); i++) {
+/* I'm making the pretty bold assumption that everything is at least a valid polygon with three or more vertices */
+std::vector<IndexFace *> * TriangleMesh::makeTriangles(std::vector<IndexFace *> * indexFaces,
+										std::vector<Vertex *> * vertices) {
+	std::vector<IndexFace *> * triangles = new std::vector<IndexFace *>;
+	for(int i = 0; i < (int) indexFaces->size(); i++) {
+		IndexFace * f = indexFaces->at(i);
+		int origin = f->vertices->at(0);
+		int last = 0; //small hack, will get bumped back
+		int current = f->vertices->at(1);
+		for(int j = 2; j < (int) f->vertices->size(); j++) {
+			last = current;
+			current = indexFaces->at(i)->vertices->at(j);
+			vector<Vertex *> * triangleVertices = new vector<Vertex *>;
+			IndexFace * triangle = (IndexFace *) malloc(sizeof(IndexFace));
+
+			Vertex * v0 = vertices->at(origin);
+			Vertex * v1 = vertices->at(last);
+			Vertex * v2 = vertices->at(current);
+
+			if((v1->point->x >= v2->point->x) && (v1->point->y >= v2->point->y)) {
+				Vertex * temp = v1;
+				v1 = v2;
+				v2 = temp;
+			}
+
+			triangleVertices->push_back(v0);
+			triangleVertices->push_back(v1);
+			triangleVertices->push_back(v2);
+			triangles->push_back(triangle);
 		}
 	}
-
-	HalfEdge edges[] = new HalfEdge[triangles.size() * 2];
-
-
-
-	// TODO Auto-generated constructor stub
-
+	return triangles;
 }
+
 
 TriangleMesh::~TriangleMesh() {
 	// TODO Auto-generated destructor stub

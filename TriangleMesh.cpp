@@ -27,12 +27,43 @@ TriangleMesh::TriangleMesh(char * filename) {
 	}
 	readFromFile(myfile, coords, normals, faces);
 
-	std::vector<Vertex *> * vertices = makeVertices(coords, normals);
-	std::vector<Face *> * triangles = makeTriangles(faces, vertices);
-	std::vector<HalfEdge *> * mesh = makeMesh(triangles,vertices);
-	this.vertices = vertices;
-	this.mesh = mesh;
+	std::vector<Vertex *> * v = makeVertices(coords, normals);
+	std::vector<Face *> * t = makeTriangles(faces, v);
+	std::vector<HalfEdge *> * m = makeMesh(t,v);
+	vertices = *v;
+	mesh = *m;
+	triangles = *t;
+}
 
+std::vector<std::string> * TriangleMesh::query(int v) {
+	std::vector<string> * output = new std::vector<string>;
+
+	/* I </3 C++ type conversions */
+	std::stringstream out;
+	out << v;
+	output->push_back(out.str());
+	std::vector<string> innerVertices;
+	Vertex * vertex = vertices.at(v);
+	HalfEdge * h = vertex->h;
+	do {
+		h = h->pair->next;
+		std::stringstream stream;
+		stream << h->v;
+		innerVertices.push_back(stream.str());
+	} while ((NULL != h->pair) &&
+			 (NULL != h->pair->next) &&
+			 (h->pair->next != vertex->h));
+	int size = innerVertices.size();
+	std::stringstream sizeStream;
+	sizeStream << size;
+	output->push_back(sizeStream.str());
+
+	std::stringstream s;
+	for(int i = 0; i < size; i++) {
+		s << innerVertices.at(i) << " ";
+	}
+	output->push_back(s.str());
+	return output;
 }
 
 void TriangleMesh::readFromFile(std::ifstream & input,
@@ -130,12 +161,12 @@ std::vector<Face *> * TriangleMesh::makeTriangles(std::vector<Face *> * indexFac
 	return triangles;
 }
 
-std::vector<HalfEdge *> * TriangleMesh::makeMesh(std::vector<Face *> triangles,
-												std::vector<Vertex *> vertices) {
+std::vector<HalfEdge *> * TriangleMesh::makeMesh(std::vector<Face *> * triangles,
+												std::vector<Vertex *> * vertices) {
 	boost::unordered_map<string, HalfEdge *> map;
 	std::vector<HalfEdge *> * edges = new std::vector<HalfEdge *>;
 	/*Everything but the pair is easy*/
-	for(std::vector<Face *>::iterator it = triangles.begin(); it != triangles.end(); it++) {
+	for(std::vector<Face *>::iterator it = triangles->begin(); it != triangles->end(); it++) {
 		HalfEdge * h1 = (HalfEdge *) malloc(sizeof(HalfEdge));
 		HalfEdge * h2 = (HalfEdge *) malloc(sizeof(HalfEdge));
 		HalfEdge * h3 = (HalfEdge *) malloc(sizeof(HalfEdge));
@@ -193,14 +224,14 @@ std::vector<HalfEdge *> * TriangleMesh::makeMesh(std::vector<Face *> triangles,
 		if(NULL == triangle->h) {
 			triangle->h= h1;
 		}
-		if(NULL == vertices.at(v1)) {
-			vertices.at(v1)->h = h1;
+		if(NULL == vertices->at(v1)) {
+			vertices->at(v1)->h = h1;
 		}
-		if(NULL == vertices.at(v2)) {
-			vertices.at(v2)->h = h2;
+		if(NULL == vertices->at(v2)) {
+			vertices->at(v2)->h = h2;
 		}
-		if(NULL == vertices.at(v3)) {
-			vertices.at(v3)->h = h3;
+		if(NULL == vertices->at(v3)) {
+			vertices-> at(v3)->h = h3;
 		}
 
 		edges->push_back(h1);
@@ -214,6 +245,20 @@ std::vector<HalfEdge *> * TriangleMesh::makeMesh(std::vector<Face *> triangles,
 
 
 TriangleMesh::~TriangleMesh() {
-	// TODO Auto-generated destructor stub
+	for(std::vector<Vertex *>::iterator it = vertices.begin(); it != vertices.end(); it++) {
+		Vertex * v = *it;
+		free(v->normal);
+		free(v->point);
+		free(v);
+	}
+	for(std::vector<Face *>::iterator it = triangles.begin(); it != triangles.end(); it++) {
+		Face * f = *it;
+		delete(f->vertices);
+		free(f);
+	}
+	for(std::vector<HalfEdge *>::iterator it = mesh.begin(); it != mesh.end(); it++) {
+		HalfEdge * e = *it;
+		free(e);
+	}
 }
 

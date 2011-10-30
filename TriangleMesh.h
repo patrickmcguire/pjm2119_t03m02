@@ -18,6 +18,7 @@ class TriangleMesh {
 private:
 	std::vector<Vertex *> vertices;
 	std::vector<HalfEdge *> mesh;
+	std::vector<Face *> triangles;
 	void readFromFile(std::ifstream & input,
 					std::vector<Coordinate *> * coords,
 					std::vector<NormalVector *> * normals,
@@ -26,9 +27,10 @@ private:
 										std::vector<NormalVector *> * norms);
 	std::vector<Face *> *  makeTriangles(std::vector<Face *> * indexFaces,
 										std::vector<Vertex *> * vertices);
-	std::vector<HalfEdge *> * makeMesh(std::vector<Face *> triangles,
-										std::vector<Vertex *> vertices);
+	std::vector<HalfEdge *> * makeMesh(std::vector<Face *> * triangles,
+										std::vector<Vertex *> * vertices);
 public:
+	std::vector<std::string> * query(int v);
 	TriangleMesh(char * filename);
 	virtual ~TriangleMesh();
 };

@@ -18,22 +18,24 @@ using namespace std;
 TriangleMesh::TriangleMesh(char * filename) {
 	std::vector<Coordinate *> * coords = new std::vector<Coordinate *>;
 	std::vector<NormalVector *> * normals = new std::vector<NormalVector *>;
-	std::vector<IndexFace *> * indexFaces = new std::vector<IndexFace *>;
+	std::vector<Face *> * faces = new std::vector<Face *>;
 	ifstream myfile;
 	myfile.open(filename, ios::in);
 	if(!myfile.is_open()) {
 		throw 1;
 	}
-	readFromFile(myfile, coords, normals, indexFaces);
+	readFromFile(myfile, coords, normals, faces);
 
 	std::vector<Vertex *> * vertices = makeVertices(coords, normals);
-	std::vector<IndexFace *> * triangles = makeTriangles(indexFaces, vertices);
+	std::vector<Face *> * triangles = makeTriangles(faces, vertices);
+
+
 }
 
 void TriangleMesh::readFromFile(std::ifstream & input,
 					std::vector<Coordinate *> * coords,
 					std::vector<NormalVector *> * normals,
-					std::vector<IndexFace *> * indexFaces) {
+					std::vector<Face *> * indexFaces) {
 	vector<string> lines;
 	int i = 0;
 
@@ -45,7 +47,7 @@ void TriangleMesh::readFromFile(std::ifstream & input,
 	for(vector<string>::iterator it = lines.begin(); it != lines.end(); it++) {
 		string line = *it;
 		vector<string> tokens;
-		vector<IndexFace *> faceIndices;
+		vector<Face *> faceIndices;
 		boost::algorithm::split(tokens,line,boost::algorithm::is_space());
 		if(tokens.size() >= 3) {
 			string first = tokens.at(0);
@@ -65,7 +67,7 @@ void TriangleMesh::readFromFile(std::ifstream & input,
 				normals->push_back(n);
 			} else if(first.compare("f")) {
 				vector<int> * buffer = new vector<int>(0);
-				IndexFace * f = (IndexFace *) malloc(sizeof(IndexFace));
+				Face * f = (Face *) malloc(sizeof(Face));
 				for (unsigned int i = 1; i < tokens.size(); i++){
 					int temp;
 					sscanf(tokens.at(i).c_str(),"%d",&temp);
@@ -85,44 +87,71 @@ std::vector<Vertex *> * TriangleMesh::makeVertices (std::vector<Coordinate *> * 
 		Vertex * v = (Vertex *) malloc(sizeof(Vertex));
 		v->normal = norms->at(i);
 		v->point = coords->at(i);
+		v->h = NULL;
 		vertices->push_back(v);
 	}
 	return vertices;
 }
 
 /* I'm making the pretty bold assumption that everything is at least a valid polygon with three or more vertices */
-std::vector<IndexFace *> * TriangleMesh::makeTriangles(std::vector<IndexFace *> * indexFaces,
-										std::vector<Vertex *> * vertices) {
-	std::vector<IndexFace *> * triangles = new std::vector<IndexFace *>;
+std::vector<Face *> * TriangleMesh::makeTriangles(std::vector<Face *> * indexFaces,
+													std::vector<Vertex *> * vertices) {
+	std::vector<Face *> * triangles = new std::vector<Face *>;
 	for(int i = 0; i < (int) indexFaces->size(); i++) {
-		IndexFace * f = indexFaces->at(i);
+		Face * f = indexFaces->at(i);
 		int origin = f->vertices->at(0);
 		int last = 0; //small hack, will get bumped back
 		int current = f->vertices->at(1);
 		for(int j = 2; j < (int) f->vertices->size(); j++) {
 			last = current;
 			current = indexFaces->at(i)->vertices->at(j);
-			vector<Vertex *> * triangleVertices = new vector<Vertex *>;
-			IndexFace * triangle = (IndexFace *) malloc(sizeof(IndexFace));
+			Face * triangle = (Face *) malloc(sizeof(Face));
+			vector<int> * verts = new vector<int>;
+			triangle->h = NULL;
+			triangle->vertices = verts;
 
-			Vertex * v0 = vertices->at(origin);
 			Vertex * v1 = vertices->at(last);
 			Vertex * v2 = vertices->at(current);
 
+			verts->push_back(origin);
 			if((v1->point->x >= v2->point->x) && (v1->point->y >= v2->point->y)) {
-				Vertex * temp = v1;
-				v1 = v2;
-				v2 = temp;
+				verts->push_back(current);
+				verts->push_back(last);
+			} else {
+				verts->push_back(last);
+				verts->push_back(current);
 			}
-
-			triangleVertices->push_back(v0);
-			triangleVertices->push_back(v1);
-			triangleVertices->push_back(v2);
 			triangles->push_back(triangle);
 		}
 	}
 	return triangles;
 }
+
+std::vector<HalfEdge *> * TriangleMesh::makeMesh(std::vector<Face *> triangles,
+												std::vector<Vertex *> vertices) {
+	std::vector<HalfEdge *> * mesh = new std::vector<HalfEdge *>;
+
+	/*Everything but the pair is easy*/
+	for(std::vector<Face *>::iterator it = triangles.begin(); it != triangles.end(); it++) {
+		HalfEdge * h1 = (HalfEdge *) malloc(sizeof(HalfEdge));
+		HalfEdge * h2 = (HalfEdge *) malloc(sizeof(HalfEdge));
+		HalfEdge * h3 = (HalfEdge *) malloc(sizeof(HalfEdge));
+
+		h1->next=h2;
+		h2->next=h3;
+		h3->next=h1;
+		if(NULL == it->h) {
+			it-> h= h1;
+		}
+		h1->f = it;
+		h2->f = it;
+		h3->f = it;
+	}
+
+	return NULL;
+}
+
+
 
 
 TriangleMesh::~TriangleMesh() {

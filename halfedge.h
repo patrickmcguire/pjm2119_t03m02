@@ -22,16 +22,19 @@ typedef struct Coordinate {
 	float z;
 } Coordinate;
 
+typedef struct Face {
+	std::vector<int> * vertices;
+	struct HalfEdge * h;
+} Face;
+
+
 typedef struct Vertex {
+	std::vector<Face *> faces; //I only use this to calculate the normals
 	Coordinate * point;
 	NormalVector * normal;
 	struct HalfEdge * h;
 } Vertex;
 
-typedef struct Face {
-	std::vector<int> * vertices;
-	struct HalfEdge * h;
-} Face;
 
 typedef struct HalfEdge {
 	HalfEdge * pair;

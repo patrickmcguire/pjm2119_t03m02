@@ -4,7 +4,7 @@ UNI = pjm2119
 Theme = 03
 Milestone = 02
 
-SRC = main.cpp
+SRC = main.cpp TriangleMesh.cpp
 TARGET = main_t$(Theme)m$(Milestone)
 
 OBJS = main.o TriangleMesh.o
@@ -24,11 +24,11 @@ LDFLAGS = -framework GLUT -framework OpenGL
 CFLAGS = -Wall -g $(INCDIRS) $(LIBDIR) -framework GLUT -framework OpenGL $(LDFLAGS)
 endif
 
-all: $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) $(LFLAGS)
+all: $(OBJS) $(HEADERS) TriangleMesh.o
+	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS) $(LFLAGS) $(HEADERS)
 main.o: $(SRC) $(HEADERS)
-	$(CC) $(CFLAGS) -c $(SRC) $(HEADERS)
-trianglemesh.o: $(SRC) $(HEADERS)
+	$(CC) $(CFLAGS) -c main.cpp $(HEADERS)
+TriangleMesh.o: $(SRC) $(HEADERS)
 	$(CC) $(CFLAGS) -c TriangleMesh.cpp $(HEADERS)
 
 clean:

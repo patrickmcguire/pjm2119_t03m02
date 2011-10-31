@@ -27,12 +27,16 @@ TriangleMesh::TriangleMesh(char * filename) {
 	}
 	readFromFile(myfile, coords, normals, faces);
 
+	if(coords->size() == normals->size()) {
+		for(std::vector<Normal >)
+
+	}
 	std::vector<Vertex *> * v = makeVertices(coords, normals);
 	std::vector<Face *> * t = makeTriangles(faces, v);
 	std::vector<HalfEdge *> * m = makeMesh(t,v);
-	vertices = *v;
-	mesh = *m;
-	triangles = *t;
+	this->vertices = *v;
+	this->mesh = *m;
+	this->triangles = *t;
 }
 
 std::vector<std::string> * TriangleMesh::query(int v) {
@@ -71,7 +75,6 @@ void TriangleMesh::readFromFile(std::ifstream & input,
 					std::vector<NormalVector *> * normals,
 					std::vector<Face *> * indexFaces) {
 	vector<string> lines;
-	int i = 0;
 
 	while(!input.eof()) {
 		string * s = new string;
@@ -85,22 +88,22 @@ void TriangleMesh::readFromFile(std::ifstream & input,
 		boost::algorithm::split(tokens,line,boost::algorithm::is_space());
 		if(tokens.size() >= 3) {
 			string first = tokens.at(0);
-			if(first.compare("s")) {
+			if(0 == first.compare("s")) {
 				//do nothing
-			} else if(first.compare("v")) {
+			} else if(0 == first.compare("v")) {
 				Coordinate * c = (Coordinate *) malloc(sizeof(Coordinate));
 				sscanf(tokens.at(1).c_str(),"%f",&(c->x));
 				sscanf(tokens.at(2).c_str(),"%f",&(c->y));
 				sscanf(tokens.at(3).c_str(),"%f",&(c->z));
 				coords->push_back(c);
-			} else if(first.compare("vn")) {
+			} else if(0 == first.compare("vn")) {
 				NormalVector * n = (NormalVector *) malloc(sizeof(NormalVector));
 				sscanf(tokens.at(1).c_str(),"%f",&(n->x));
 				sscanf(tokens.at(2).c_str(),"%f",&(n->y));
 				sscanf(tokens.at(3).c_str(),"%f",&(n->z));
 				normals->push_back(n);
-			} else if(first.compare("f")) {
-				vector<int> * buffer = new vector<int>(0);
+			} else if(0 == first.compare("f")) {
+				vector<int> * buffer = new vector<int>;
 				Face * f = (Face *) malloc(sizeof(Face));
 				for (unsigned int i = 1; i < tokens.size(); i++){
 					int temp;
@@ -109,6 +112,8 @@ void TriangleMesh::readFromFile(std::ifstream & input,
 				}
 				f->vertices = buffer;
 				faceIndices.push_back(f);
+			} else {
+				cerr << first << "\n";
 			}
 		}
 	}
@@ -117,10 +122,14 @@ void TriangleMesh::readFromFile(std::ifstream & input,
 std::vector<Vertex *> * TriangleMesh::makeVertices (std::vector<Coordinate *> * coords,
 									std::vector<NormalVector *> * norms) {
 	std::vector<Vertex *> * vertices = new vector<Vertex *>;
-	for(unsigned int i = 0; i < norms->size(); i++) {
+	for(unsigned int i = 0; i < coords->size(); i++) {
 		Vertex * v = (Vertex *) malloc(sizeof(Vertex));
-		v->normal = norms->at(i);
 		v->point = coords->at(i);
+		if(i >= norms->size()) {
+			v->normal = NULL;
+		} else {
+			v->normal = norms->at(i);
+		}
 		v->h = NULL;
 		vertices->push_back(v);
 	}

@@ -29,8 +29,10 @@ int main(int argc, char * argv[]) {
 		sscanf(argv[3],"%d",&index);
 	}
 
-
-
+	std::vector<string> * query = m.query(index);
+	for(std::vector<string>::iterator it = query->begin(); it != query->end(); it++) {
+		cout << *it << "\n";
+	}
 
 	return 0;
 
